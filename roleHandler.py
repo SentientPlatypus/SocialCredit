@@ -48,8 +48,11 @@ async def peopleWhoHaveRole(guild:nextcord.Guild, role:nextcord.Role) ->List[nex
 
 async def createRankRole(guild:nextcord.Guild, roleName:str) ->None:
     r, g, b = constants.RANK_ROLES[roleName]["color"]
-    guild.create_role(name=roleName, color=nextcord.Color.from_rgb(r, g, b))
+    await guild.create_role(name=roleName, color=nextcord.Color.from_rgb(r, g, b))
 
+async def removeRankRole(guild:nextcord.Guild, user:nextcord.Member, roleName:str):
+    roleToRemove:nextcord.Role = await getRoleByName(guild, roleName)
+    await user.remove_roles(*[roleToRemove])
 
 class roleHandler(commands.Cog):
     def __init__(self, client):

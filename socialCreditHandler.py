@@ -14,7 +14,7 @@ import roleHandler
 def getSocialCredit( user:nextcord.Member):
     return databaseHandler.getUserValue(user, "socialCredit")
 
-def getRank( user:nextcord.Member):
+def getRank( user:nextcord.Member) ->str:
     return databaseHandler.getUserValue(user, "rank")
 
 class socialCreditHandler(commands.Cog):
@@ -29,7 +29,7 @@ class socialCreditHandler(commands.Cog):
     async def updateTitle(guild:nextcord.Guild, user:nextcord.Member):
         all_ranks = list(constants.RANK_ROLES.keys())
         currentSocialCredit = getSocialCredit( user)
-        currentRank = getRank( user)
+        currentRank = getRank(user)
         rankIndex = 0;
         if currentSocialCredit > 100:
             rankIndex +=1
@@ -44,6 +44,7 @@ class socialCreditHandler(commands.Cog):
             newRole:str = all_ranks[rankIndex]
             if not await roleHandler.hasRoleByName(guild, newRole):
                 await roleHandler.createRankRole(guild, roleName=newRole)
+            await roleHandler.removeRankRole(guild, user, currentRank)
             await roleHandler.addRoleByName(guild, newRole, user)
 
 
