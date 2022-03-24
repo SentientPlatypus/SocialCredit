@@ -40,12 +40,14 @@ class socialCreditHandler(commands.Cog):
         if currentSocialCredit > 25000:
             rankIndex +=1
 
-        if list(all_ranks).index(currentRank) != rankIndex:
+        if currentRank != all_ranks[rankIndex]:
             newRole:str = all_ranks[rankIndex]
             if not await roleHandler.hasRoleByName(guild, newRole):
                 await roleHandler.createRankRole(guild, roleName=newRole)
-            await roleHandler.removeRankRole(guild, user, currentRank)
+            if await roleHandler.hasRoleByName(guild, currentRank):
+                await roleHandler.removeRankRole(guild, user, currentRank)
             await roleHandler.addRoleByName(guild, newRole, user)
+            databaseHandler.updateUserValue(user, "rank", newRole)
 
 
 
