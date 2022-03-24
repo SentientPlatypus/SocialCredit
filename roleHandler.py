@@ -20,8 +20,8 @@ async def getRoleByName(guild:nextcord.Guild, roleName:str) -> nextcord.Role:
     return None
 
 async def addRoleByName(guild:nextcord.Guild, roleName:str, user:nextcord.Member):
-    allRolesInGuild:List[nextcord.Role] = guild.fetch_roles()
-    user.add_roles(*[getRoleByName(guild, roleName)])
+    allRolesInGuild:List[nextcord.Role] = await guild.fetch_roles()
+    await user.add_roles(*[await getRoleByName(guild, roleName)])
 
 
 async def hasChannel(guild:nextcord.Guild, channelName:str) ->bool:

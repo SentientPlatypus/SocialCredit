@@ -11,25 +11,25 @@ import roleHandler
 
     
 
+def getSocialCredit( user:nextcord.Member):
+    return databaseHandler.getUserValue(user, "socialCredit")
+
+def getRank( user:nextcord.Member):
+    return databaseHandler.getUserValue(user, "rank")
 
 class socialCreditHandler(commands.Cog):
     def __init__(self, client):
         self.client:commands.Bot = client
 
-    async def updateSocialCredit(self, user:nextcord.Member, amount):
+    async def updateSocialCredit(guild:nextcord.Guild, user:nextcord.Member, amount):
         databaseHandler.incrementUserValue(user, "socialCredit", amount)
-        await socialCreditHandler.updateTitle(self, user)
+        await socialCreditHandler.updateTitle(guild, user)
 
-    def getSocialCredit(self, user:nextcord.Member):
-        return databaseHandler.getUserValue(user, "socialCredit")
 
-    def getRank(self, user:nextcord.Member):
-        return databaseHandler.getUserValue(user, "rank")
-
-    async def updateTitle(self, user:nextcord.Member):
+    async def updateTitle(guild:nextcord.Guild, user:nextcord.Member):
         all_ranks = list(constants.RANK_ROLES.keys())
-        currentSocialCredit = socialCreditHandler.getSocialCredit(self, user)
-        currentRank = socialCreditHandler.getRank(self, user)
+        currentSocialCredit = getSocialCredit( user)
+        currentRank = getRank( user)
         rankIndex = 0;
         if currentSocialCredit > 100:
             rankIndex +=1
@@ -42,8 +42,7 @@ class socialCreditHandler(commands.Cog):
 
         if list(all_ranks).index(currentRank) != rankIndex:
             newRole:str = all_ranks[rankIndex]
-            guild:nextcord.Guild = self.client.get_guild(constants.IHS_GUILD_ID)
-            if not roleHandler.hasRoleByName(guild, newRole):
+            if not await roleHandler.hasRoleByName(guild, newRole):
                 await roleHandler.createRankRole(guild, roleName=newRole)
             await roleHandler.addRoleByName(guild, newRole, user)
 
@@ -53,7 +52,7 @@ class socialCreditHandler(commands.Cog):
     @commands.command(name = "awardMember", help = "Awards a member the specified amount of social credit")
     @commands.has_permissions(administrator = True)
     async def awardMember(self, ctx, user:nextcord.Member, amountOfSocialCredit:int):
-        await socialCreditHandler.updateSocialCredit(self, user, amountOfSocialCredit)
+        await socialCreditHandler.updateSocialCredit(user.guild, user, amountOfSocialCredit)
 
         embed = nextcord.Embed(
             title = f"{user.display_name} has been awarded {amountOfSocialCredit} social credit!",
@@ -70,7 +69,7 @@ class socialCreditHandler(commands.Cog):
     async def awardRole(self, ctx, role:nextcord.Role, amountOfSocialCredit:int):
         async for member in ctx.guild.fetch_members(limit=None):
             if role in member.roles:
-                await socialCreditHandler.updateSocialCredit(self, member, amountOfSocialCredit)
+                await socialCreditHandler.updateSocialCredit(member.guild, member, amountOfSocialCredit)
 
         embed = nextcord.Embed(
             title = f"Members of {role.name} have been awarded {amountOfSocialCredit} social credit!",
@@ -87,7 +86,7 @@ class socialCreditHandler(commands.Cog):
         if not p:
             p = ctx.author
         
-        points = socialCreditHandler.getSocialCredit(self, p)
+        points = getSocialCredit(p)
 
         embed = nextcord.Embed(title = f"{p.display_name}'s profile!", color = nextcord.Color.green())
         embed.add_field(name = "social credit:", value = f"```{points} social Credit```")
