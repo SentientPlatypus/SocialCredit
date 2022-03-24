@@ -108,7 +108,7 @@ def incrementGuildValue(user:nextcord.user, key:str, amountToIncrement:int):
 
 class databseHandler(commands.Cog):
     def __init__(self, client):
-        self.client = client
+        self.client:commands.Bot = client
 
     @commands.Cog.listener()
     async def on_guild_join(self, guild):
