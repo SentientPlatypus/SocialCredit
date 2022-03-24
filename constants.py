@@ -1,4 +1,5 @@
 import os
+import nextcord
 
 BOT_TOKEN                  = "OTU2MjU1MzA3MzM0NTU3NzQ2.YjtkJw.NapQInn6w-1Hq09ry8GZBbuLRSU"
 CMD_PREFIX                 = "!"
@@ -17,6 +18,7 @@ DB_CHECK_READY_PRINT   = "------------------------------------DB CHECK DONE-----
 USER_DATABASE_DEFAULTS = {
     "needsUpdate":True,
     "socialCredit":0,
+    "rank":"None"
 }
 GUILD_DATABASE_DEFAULTS = {
     "needsUpdate":True,
@@ -24,6 +26,15 @@ GUILD_DATABASE_DEFAULTS = {
     "victories":0,
     "prefix":"!"
 }
+
+TITLE_ROLES = [
+    nextcord.Role(),
+    "Person",
+    "Worker",
+    "Revolutionary",
+    "Comrade",
+]
+
 
 USER_DATABASE_PATH      = os.path.join(os.path.dirname(__file__),r"./Databases/users.json")
 GUILD_DATABASE_PATH     = os.path.join(os.path.dirname(__file__),r"./Databases/guilds.json")

@@ -14,7 +14,7 @@ import helper
 import helpCommand
 import databaseHandler
 import socialCreditHandler
-
+import roleHandler
 
 
 
@@ -28,9 +28,9 @@ client = commands.Bot(command_prefix="!", intents =nextcord.Intents.all(), statu
 
 
 ##------------INITIALIZING COGS----------------------
-# roleHandlerCog = [roleHandler]
-# for i in range(len(roleHandlerCog)):
-#     roleHandlerCog[i].setup(client)
+roleHandlerCog = [roleHandler]
+for i in range(len(roleHandlerCog)):
+    roleHandlerCog[i].setup(client)
 
 databaseHandlerCog = [databaseHandler]
 for i in range(len(databaseHandlerCog)):

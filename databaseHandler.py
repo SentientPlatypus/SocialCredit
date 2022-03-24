@@ -36,6 +36,23 @@ def checkMember(user:nextcord.Member) ->None:
         allUsersDict["users"][id] = newUserDictionary
         updateDatabase(allUsersDict)
 
+def checkMemberById(id:str):
+    """Make sure the id is a string. JSON keys cant be integers!"""
+    allUsersDict = getDictionary()
+    if id in allUsersDict["users"].keys():
+        userDict = allUsersDict["users"][id]
+        if userDict["needsUpdate"]:
+            for key in constants.USER_DATABASE_DEFAULTS:
+                if key not in userDict.keys():
+                    userDict[key] = constants.USER_DATABASE_DEFAULTS[key]
+            userDict["needsUpdate"] = False
+            updateDatabase(allUsersDict)
+    else:
+        newUserDictionary = constants.USER_DATABASE_DEFAULTS
+        newUserDictionary["needsUpdate"] = False
+        allUsersDict["users"][id] = newUserDictionary
+        updateDatabase(allUsersDict)
+
 def checkGuild(guild:nextcord.Guild) ->None:
     """Checks a guild if its present in the database, and if not, adds it. JSON DOES NOT TAKE INTEGER KEYS."""
     id = str(guild.id)
@@ -49,7 +66,6 @@ def checkGuild(guild:nextcord.Guild) ->None:
             guildDict["needsUpdate"] = False
             updateDatabase(allGuildsDict, constants.GUILD_DATABASE_PATH)
     else:
-        print("not in guilds")
         newGuildDictionary = constants.GUILD_DATABASE_DEFAULTS
         newGuildDictionary["needsUpdate"] = False
         allGuildsDict["guilds"][id] = newGuildDictionary
@@ -111,6 +127,18 @@ class databseHandler(commands.Cog):
             for member in guild.members:
                 checkMember(member)
         print(constants.DB_CHECK_READY_PRINT)
+
+    @commands.command()
+    @commands.is_owner()
+    async def setUpdateTrueForUsers(self, ctx):
+        allUsersDictionary = getDictionary(constants.USER_DATABASE_PATH)
+        for key in allUsersDictionary["users"]:
+            allUsersDictionary["users"][key]["needsUpdate"] = True
+        updateDatabase(allUsersDictionary, constants.USER_DATABASE_PATH)
+        for key in allUsersDictionary["users"]:
+            checkMemberById(key)
+        print("done")
+
 
 
 def setup(client):

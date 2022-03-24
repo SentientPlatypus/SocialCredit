@@ -5,12 +5,17 @@ import constants
 import databaseHandler
 import json
 
+    
+
 def updateSocialCredit(user:nextcord.Member, amount):
     databaseHandler.incrementUserValue(user, "socialCredit", amount)
+    updateTitle(user)
 
 def getSocialCredit(user:nextcord.Member):
     return databaseHandler.getUserValue(user, "socialCredit")
 
+def updateTitle(user:nextcord.Member):
+    currentSocialCredit = getSocialCredit(user)
 
 class socialCreditHandler(commands.Cog):
     def __init__(self, client):
@@ -50,19 +55,23 @@ class socialCreditHandler(commands.Cog):
         embed.set_thumbnail(url=constants.SPINNING_COIN_GIF)
         await ctx.channel.send(embed=embed)
 
-    @commands.command(name = "profile", help = "displays the persons social credit")
+    @commands.command(name = "profile", help = "displays the persons profile")
     async def profile(self, ctx, p:nextcord.Member = None):
         if not p:
             p = ctx.author
         
         points = getSocialCredit(p)
 
-        embed = nextcord.Embed(title = f"{p.display_name}'s social credit!", color = nextcord.Color.green())
+        embed = nextcord.Embed(title = f"{p.display_name}'s profile!", color = nextcord.Color.green())
         embed.add_field(name = "social credit:", value = f"```{points} social Credit```")
+        embed.add_field(name="Rank", value="```"+databaseHandler.getUserValue(p, "rank")+"```")
         embed.set_author(name = p.display_name, icon_url=p.avatar)
         embed.set_thumbnail(url = constants.SPINNING_COIN_GIF)
         embed.timestamp = ctx.message.created_at
         await ctx.channel.send(embed = embed)
+
+
+
 
 
     @commands.command(name = "leaderboard", help = "displays top social credit holders")
@@ -75,29 +84,26 @@ class socialCreditHandler(commands.Cog):
         embed.set_thumbnail(url=constants.SPINNING_COIN_GIF)
         embed.timestamp = ctx.message.created_at
         rankings = sortedIdDictionary.keys()
-        print(rankings)
         for x in rankings:
-            try:
-                temp = ctx.guild.get_member(x).display_name
-                tempSC = sortedIdDictionary[x]["socialCredit"]
-                embed.add_field(name = f"{i}: {temp}", value = f"social credit: `{tempSC}BP`", inline = False) 
-                i+=1
-                if i > limit:
-                    break
-            except:
-                pass
+            temp = ctx.guild.get_member(int(x)).display_name
+            tempSC = sortedIdDictionary[x]["socialCredit"]
+            embed.add_field(name = f"{i}: {temp}", value = f"social credit: `{tempSC}SocialCredit`", inline = False) 
+            i+=1
+            if i > limit:
+                break
+
         await ctx.channel.send(embed=embed)
 
 
     @commands.command(name = "resetSocialCredit", help = "resets ALL social credit to 0")
     @commands.has_permissions(administrator = True)
-    async def resetBozuPoints(self, ctx):
+    async def resetSocialCredit(self, ctx):
         embed=nextcord.Embed(
                 title = "Are you sure?", 
                 description="reply with `yes` to confirm", 
                 color= nextcord.Color.red(), 
                 )
-        embed.set_thumbnail(url = constants.EXCLAMATION_MARK_IMG)
+        embed.set_thumbnail(url = constants.ERROR_EXCLAMATION_ICON)
         embed.timestamp = ctx.message.created_at
         prompt = await ctx.channel.send(embed=embed)
 
@@ -106,14 +112,14 @@ class socialCreditHandler(commands.Cog):
         
         confirm = await self.client.wait_for('message', check=check, timeout=10)
         if confirm:
-            rankings = pointDB.find().sort("bozuPoints",-1)
-            for x in rankings:
-                pointDB.update_one({"id":x["id"]}, {"$set":{"bozuPoints":0}})
+            rankings = databaseHandler.getDictionary()
+            for x in rankings["users"].keys():
+                databaseHandler.updateUserValue(ctx.guild.get_member(int(x)), "socialCredit", 0)
             embed=nextcord.Embed(
                 title = f"{ctx.author.display_name} has reset social credit!", 
                 description = "@here", color = nextcord.Color.blue(), 
                 )
-            embed.set_thumbnail(url = constants.EXCLAMATION_MARK_IMG)
+            embed.set_thumbnail(url = constants.ERROR_EXCLAMATION_ICON)
             embed.timestamp =ctx.message.created_at
             await ctx.channel.send(embed=embed)
 

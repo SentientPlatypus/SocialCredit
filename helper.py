@@ -16,7 +16,7 @@ async def updatePresence(client):
     await client.change_presence(
         status=nextcord.Status.online, 
         activity=nextcord.Game(
-            name = "%shelp %s users"%(
+            name = "%shelp %s comrades"%(
                 constants.CMD_PREFIX, getNumMembers(client)
                 )
             )

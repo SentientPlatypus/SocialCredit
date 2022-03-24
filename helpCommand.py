@@ -61,7 +61,7 @@ class Help(commands.Cog):
                 if pgnum==1:
                     embed.add_field(name="Bot", value="> `info`,`help`",inline=False)
                     embed.add_field(name = "General", value = "> `userinfo`, `serverinfo`")
-                    embed.add_field(name = "SocialCredit 💬", value = "> `profile`, `awardMember`, `awardRole`, `leaderBoard`")
+                    embed.add_field(name = "SocialCredit :flag_cn:", value = "> `profile`, `awardMember`, `awardRole`, `leaderboard`, `resetSocialCredit`")
                 embed.set_footer(text="navigate with reactions")
                 try:
                     await msg.edit(embed=embed)
