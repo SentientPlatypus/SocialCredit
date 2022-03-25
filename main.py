@@ -10,13 +10,16 @@ import asyncio
 import constants
 import helper
 
+##--------------WEBSERV-------------------------------
+from keep_alive import keep_alive
+
 ##-------------COGS-----------------------------------
 import helpCommand
 import databaseHandler
 import socialCreditHandler
 import roleHandler
 
-
+print("we out")
 
 async def determinePrefix(bot, message):
     guild = message.guild
@@ -223,4 +226,6 @@ async def on_ready():
 async def on_member_join(member):
     await helper.updatePresence(client)
 
+
+keep_alive()
 client.run(constants.BOT_TOKEN)

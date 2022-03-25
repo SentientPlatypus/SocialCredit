@@ -99,7 +99,7 @@ class socialCreditHandler(commands.Cog):
         embed.add_field(name = "Awarded by:", value = f"{ctx.author.mention}")
         embed.add_field(name = "Awarded to:", value = f"{role.mention}")
         embed.set_thumbnail(url=constants.SPINNING_COIN_GIF)
-        await ctx.channel.send(embed=embed)
+        await ctx.channel.send(embed=embed  )
         if rankUpEmbed:
             await ctx.channel.send(embed=rankUpEmbed)
 
@@ -182,6 +182,8 @@ class socialCreditHandler(commands.Cog):
     @commands.Cog.listener()
     async def on_message(self, message:nextcord.Message):
         dictKey = str(message.author.id)
+
+        await helper.handleBadWords(message)
         if dictKey in USER_MESSAGE_COUNTER.keys():
             USER_MESSAGE_COUNTER[dictKey] +=1
             if USER_MESSAGE_COUNTER[dictKey] == 10:
@@ -190,7 +192,6 @@ class socialCreditHandler(commands.Cog):
                 USER_MESSAGE_COUNTER[dictKey] = 0
                 if rankUpEmbed:
                     await message.channel.send(embed=rankUpEmbed)
-
         else:
             USER_MESSAGE_COUNTER[dictKey] = 1
 

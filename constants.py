@@ -1,7 +1,7 @@
 import os
 import nextcord
 
-BOT_TOKEN                  = "OTU2MjU1MzA3MzM0NTU3NzQ2.YjtkJw.NapQInn6w-1Hq09ry8GZBbuLRSU"
+BOT_TOKEN                  = "OTU2MjU1MzA3MzM0NTU3NzQ2.YjtkJw.EsUkd258oS6Zasr-q1u0Pg9agtQ"
 CMD_PREFIX                 = "!"
 INVITE_URL                 = "https://discord.com/api/oauth2/authorize?client_id=956255307334557746&permissions=8&scope=bot"
 IHS_GUILD_ID               = 909239991501226034
@@ -11,9 +11,21 @@ SPINNING_COIN_GIF      = "https://cdn.dribbble.com/users/6257/screenshots/383314
 
 
 
-
 FINAL_READY_PRINT      = "--------------------------------------we out--------------------------------------"
 DB_CHECK_READY_PRINT   = "------------------------------------DB CHECK DONE---------------------------------"
+
+
+# BANNED_WORDS           = {
+#     "mukund": {
+#         "penalty":10
+#     }
+# }
+BANNED_WORDS           = [
+    "mukund"
+]
+
+BANNED_WORDS_PENALTY = 10
+
 
 USER_DATABASE_DEFAULTS = {
     "needsUpdate":True,
@@ -28,6 +40,11 @@ GUILD_DATABASE_DEFAULTS = {
 }
 
 RANK_ROLES = {
+    "Felon":{
+        "minSocialCredit":-10000,
+        "color":(50, 50, 50),
+        "desc":"keeps breaking rules, or is just hated by the admins"
+    },
     "None":{
         "minSocialCredit":0,
         "color":(255, 255, 255),

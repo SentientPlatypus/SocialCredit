@@ -1,8 +1,11 @@
+from ast import excepthandler
 import nextcord
 import constants
 from pymongo import MongoClient
 import gspread
 import pandas as pd
+
+from socialCreditHandler import socialCreditHandler
 
 
 
@@ -21,6 +24,33 @@ async def updatePresence(client):
                 )
             )
         )
+
+async def handleBadWords(message:nextcord.Message):
+    if any(word in constants.BANNED_WORDS for word in message.content.lower().split(" ")):
+        # foundBannedWord = returnHighestPenaltyBannedWord(message)
+        # if foundBannedWord:
+        await message.delete()
+        # penalty = constants.BANNED_WORDS[foundBannedWord]["penalty"]
+        penalty = constants.BANNED_WORDS_PENALTY
+        await socialCreditHandler.updateSocialCredit(message.guild, message.author, -penalty)
+        em = nextcord.Embed(title = "Banned word detected", description= f"```{message.author.display_name} will lose {penalty} social credit```")
+        em.color = nextcord.Color.red()
+        em.timestamp = message.created_at
+        await message.channel.send(embed=em)
+    
+def returnHighestPenaltyBannedWord(message:nextcord.Message):
+    highestPenaltyWord = None
+    content = message.content.split(" ")
+    for word in content:
+        for bannedWord in constants.BANNED_WORDS.keys():
+            if word == bannedWord:
+                try:
+                    if constants.BANNED_WORDS[highestPenaltyWord]["penalty"] < constants.BANNED_WORDS[bannedWord]["penalty"]:
+                        highestPenaltyWord = bannedWord
+                except:
+                    highestPenaltyWord = bannedWord
+    return highestPenaltyWord
+
 
 
 def syntax(command):
