@@ -51,7 +51,7 @@ RANK_ROLES = {
     "Revolutionary":{
         "minSocialCredit":25000,
         "color":(182, 26, 14),
-        "desc":"sheeeeesh"
+        "desc":"sheeeeesh, go outside for once"
     },
 }
 

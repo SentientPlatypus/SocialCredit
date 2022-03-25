@@ -99,6 +99,7 @@ class socialCreditHandler(commands.Cog):
         embed.add_field(name = "Awarded by:", value = f"{ctx.author.mention}")
         embed.add_field(name = "Awarded to:", value = f"{role.mention}")
         embed.set_thumbnail(url=constants.SPINNING_COIN_GIF)
+        await ctx.channel.send(embed=embed)
         if rankUpEmbed:
             await ctx.channel.send(embed=rankUpEmbed)
 
