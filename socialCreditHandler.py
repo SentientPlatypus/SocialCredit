@@ -1,3 +1,4 @@
+from datetime import datetime
 import nextcord
 from nextcord.ext import commands
 import helper
@@ -41,6 +42,7 @@ class socialCreditHandler(commands.Cog):
         embed = nextcord.Embed(title = f"{user.display_name}'s rank has been updated to {newRank}", description=f"```{desc}```")
         r, g, b = constants.RANK_ROLES[newRank]["color"]
         embed.color = nextcord.Color.from_rgb(r, g, b)
+        embed.timestamp = datetime.now()
         return embed
         
     async def updateTitle(guild:nextcord.Guild, user:nextcord.Member):
@@ -49,7 +51,7 @@ class socialCreditHandler(commands.Cog):
         currentRank = getRank(user)
         newRank:str = currentRank
         for rank in all_ranks:
-            if currentSocialCredit > constants.RANK_ROLES[rank]["minSocialCredit"]:
+            if currentSocialCredit >= constants.RANK_ROLES[rank]["minSocialCredit"]:
                 newRank = rank
             else:
                 break
