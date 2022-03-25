@@ -29,19 +29,29 @@ GUILD_DATABASE_DEFAULTS = {
 
 RANK_ROLES = {
     "None":{
-        "color":(255, 255, 255)
+        "minSocialCredit":0,
+        "color":(255, 255, 255),
+        "desc":"Go get social credit"
     },
     "Person":{
-        "color":(241, 242, 22)
+        "minSocialCredit":100,
+        "color":(241, 242, 22),
+        "desc":"Go get more social credit"
     },
     "Worker":{
-        "color":(241, 118, 28)
+        "minSocialCredit":1000,
+        "color":(241, 118, 28),
+        "desc":"fulfull your quota."
     },
     "Comrade":{
-        "color":(255, 36, 19)
+        "minSocialCredit":10000,
+        "color":(255, 36, 19),
+        "desc":"welcome, comrade."
     },
     "Revolutionary":{
-        "color":(182, 26, 14)
+        "minSocialCredit":25000,
+        "color":(182, 26, 14),
+        "desc":"sheeeeesh"
     },
 }
 

@@ -27,8 +27,8 @@
         },
         "643764774362021899": {
             "needsUpdate": false,
-            "socialCredit": 28100,
-            "rank": "Revolutionary"
+            "socialCredit": 1,
+            "rank": "None"
         },
         "695815713469890581": {
             "needsUpdate": false,
@@ -54,6 +54,11 @@
             "needsUpdate": false,
             "socialCredit": 0,
             "rank": "None"
+        },
+        "840653587784794132": {
+            "needsUpdate": false,
+            "socialCredit": 0,
+            "rank": "Revolutionary"
         }
     }
 }

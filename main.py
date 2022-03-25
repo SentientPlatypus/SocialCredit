@@ -57,6 +57,19 @@ async def info(ctx):
     await ctx.channel.send(embed=embed)
 
 
+@client.command(name = "ranks", aliases=["ranking", "rankinginfo", "rankingInfo", "rank"], help = "Gives information about the ranking system")
+async def ranks(ctx):
+    embed=nextcord.Embed(title="The Ranking system", color=nextcord.Color.purple())
+    embed.description= "Your rank is determined by your current social credit score."
+    for rankName in constants.RANK_ROLES.keys():
+        requiredSocialCredit = constants.RANK_ROLES[rankName]["minSocialCredit"]
+        embed.add_field(name = rankName, value= f"```Social credit required: {requiredSocialCredit}```")
+
+    embed.add_field(name = "How does social credit work?", value="```Social credit can be obtained by sending chat messages (+1 social credit / 10 messages), or it can be awarded by admins. (see !awardMember & !awardRole)```")
+    embed.set_footer(text="by Gene")
+
+    embed.set_thumbnail(url=client.user.avatar)
+    await ctx.channel.send(embed=embed)
 
 @client.command(name = "userinfo", help = "returns User's info", aliases=["ui"])
 @commands.guild_only()
