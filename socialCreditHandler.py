@@ -28,16 +28,17 @@ class socialCreditHandler(commands.Cog):
     async def updateSocialCredit(guild:nextcord.Guild, user:nextcord.Member, amountToIncrementBy):
         """INCREMENTS SOCIAL CREDIT. TO SET SOCIAL CREDIT, user setSocialCredit"""
         databaseHandler.incrementUserValue(user, "socialCredit", amountToIncrementBy)
-        await socialCreditHandler.updateTitle(guild, user)
+        return await socialCreditHandler.updateTitle(guild, user)
 
     async def setSocialCredit(guild:nextcord.Guild, user:nextcord.Member, amountTOincrementBY):
         databaseHandler.updateUserValue(user, "socialCredit", 0)
-        await socialCreditHandler.updateTitle(guild, user)
+        return await socialCreditHandler.updateTitle(guild, user)
 
     async def getRoleUpdateMessage(user:nextcord.Member) -> nextcord.Embed:
         all_ranks = constants.RANK_ROLES.keys()
         newRank = getRank(user)
-        embed = nextcord.Embed(title = f"{user.display_name}'s rank has been updated to {newRank}", description=constants.RANK_ROLES[newRank]["desc"])
+        desc = constants.RANK_ROLES[newRank]["desc"]
+        embed = nextcord.Embed(title = f"{user.display_name}'s rank has been updated to {newRank}", description=f"```{desc}```")
         r, g, b = constants.RANK_ROLES[newRank]["color"]
         embed.color = nextcord.Color.from_rgb(r, g, b)
         return embed
@@ -68,10 +69,6 @@ class socialCreditHandler(commands.Cog):
     @commands.has_permissions(administrator = True)
     async def awardMember(self, ctx, user:nextcord.Member, amountOfSocialCredit:int):
         rankUpEmbed = await socialCreditHandler.updateSocialCredit(user.guild, user, amountOfSocialCredit)
-        if rankUpEmbed:
-            print("yes")
-            await ctx.channel.send(rankUpEmbed)
-
         embed = nextcord.Embed(
             title = f"{user.display_name} has been awarded {amountOfSocialCredit} social credit!",
             color = nextcord.Color.gold()
@@ -81,6 +78,9 @@ class socialCreditHandler(commands.Cog):
         embed.add_field(name = "Awarded to:", value = f"{user.mention}")
         embed.set_thumbnail(url=constants.SPINNING_COIN_GIF)
         await ctx.channel.send(embed=embed)
+        if rankUpEmbed:
+            await ctx.channel.send(embed=rankUpEmbed)
+
 
     @commands.command(name = "awardRole", aliases = ["awardRank", "awardrank", "awardrole"], help = "Awards all members who have the specified role the specified amount of social credit")
     @commands.has_permissions(administrator = True)
@@ -88,8 +88,6 @@ class socialCreditHandler(commands.Cog):
         async for member in ctx.guild.fetch_members(limit=None):
             if role in member.roles:
                 rankUpEmbed = await socialCreditHandler.updateSocialCredit(member.guild, member, amountOfSocialCredit)
-                if rankUpEmbed:
-                    await ctx.channel.send(embed=rankUpEmbed)
 
         embed = nextcord.Embed(
             title = f"Members of {role.name} have been awarded {amountOfSocialCredit} social credit!",
@@ -99,7 +97,9 @@ class socialCreditHandler(commands.Cog):
         embed.add_field(name = "Awarded by:", value = f"{ctx.author.mention}")
         embed.add_field(name = "Awarded to:", value = f"{role.mention}")
         embed.set_thumbnail(url=constants.SPINNING_COIN_GIF)
-        await ctx.channel.send(embed=embed)
+        if rankUpEmbed:
+            await ctx.channel.send(embed=rankUpEmbed)
+
 
     @commands.command(name = "profile", help = "displays the persons profile")
     async def profile(self, ctx, p:nextcord.Member = None):
@@ -162,8 +162,7 @@ class socialCreditHandler(commands.Cog):
         if confirm:
             rankings = databaseHandler.getDictionary()
             guild:nextcord.Guild = ctx.guild
-            allGuildMembers = guild.fetch_members()
-            for member in allGuildMembers:
+            async for member in guild.fetch_members(limit=None):
                 await socialCreditHandler.setSocialCredit(ctx.guild, member, 0)
             
             
@@ -184,8 +183,11 @@ class socialCreditHandler(commands.Cog):
             USER_MESSAGE_COUNTER[dictKey] +=1
             if USER_MESSAGE_COUNTER[dictKey] == 10:
                 databaseHandler.incrementUserValue(message.author, "socialCredit", 1)
-                await socialCreditHandler.updateTitle(message.guild, message.author)
+                rankUpEmbed = await socialCreditHandler.updateTitle(message.guild, message.author)
                 USER_MESSAGE_COUNTER[dictKey] = 0
+                if rankUpEmbed:
+                    await message.channel.send(embed=rankUpEmbed)
+
         else:
             USER_MESSAGE_COUNTER[dictKey] = 1
 
