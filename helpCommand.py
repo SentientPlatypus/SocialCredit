@@ -60,8 +60,8 @@ class Help(commands.Cog):
                 embed = nextcord.Embed(title = "Help", description = "Use `!help <command>` for extended information on a command.", color =nextcord.Color.from_rgb(255, 192, 203))
                 if pgnum==1:
                     embed.add_field(name="Bot", value="> `info`,`help`, `ranks`",inline=False)
-                    embed.add_field(name = "General", value = "> `userinfo`, `serverinfo`")
-                    embed.add_field(name = "SocialCredit :flag_cn:", value = "> `profile`, `awardMember`, `awardRole`, `leaderboard`, `resetSocialCredit`")
+                    embed.add_field(name = "General", value = "> `userinfo`, `serverinfo`, `poll`")
+                    embed.add_field(name = "SocialCredit :flag_cn:", value = "> `profile`, `awardMember`, `awardRole`, `leaderboard`, `resetSocialCredit`, `hail`, `shame`")
                 embed.set_footer(text="navigate with reactions")
                 try:
                     await msg.edit(embed=embed)

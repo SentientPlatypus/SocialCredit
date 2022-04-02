@@ -1,10 +1,12 @@
 from ast import excepthandler
+from more_itertools import first
 import nextcord
 import constants
 from pymongo import MongoClient
 import gspread
 import pandas as pd
-
+import requests
+import random
 from socialCreditHandler import socialCreditHandler
 
 
@@ -64,3 +66,43 @@ def syntax(command):
     params = " ".join(params)
 
     return f"```{cmd_and_aliases} {params}```"
+
+
+class TriviaQuestion:
+    def __init__(self, question:str, incorrectAnswers:list, correctAnswer:str, category:str, ) -> None:
+        self.question = question
+        self.incorrectAnswers = incorrectAnswers
+        self.correctAnswer = correctAnswer
+        self.category = category
+
+
+
+
+
+    def initializeAnswers(self):
+        self.allAnswers = self.incorrectAnswers
+        self.allAnswers.append(self.correctAnswer)
+        self.allAnswers = random.shuffle(self.allAnswers)
+        self.optionStr = ""
+        self.optionDict = {}
+        for i in range(len(self.allAnswers)):
+            self.optionStr += constants.ALPHABET[i] + ": " + self.allAnswers[i] + "\n"
+            self.optionDict[constants.ALPHABET[i]] = self.allAnswers[i]
+
+
+
+
+
+def getTriviaQuestion() -> TriviaQuestion:
+    data = requests.get("https://opentdb.com/api.php?amount=1&difficulty=hard&type=multiple").json()
+    print(data)
+    firstRes = data["results"][0]
+    q = TriviaQuestion(
+        question=firstRes["question"],
+        category=firstRes["category"],
+        correctAnswer=firstRes["correct_answer"],
+        incorrectAnswers=firstRes["incorrect_answers"]
+    )
+    q.initializeAnswers()
+    return q
+        

@@ -1,4 +1,9 @@
+import asyncio
 from datetime import datetime
+from socket import timeout
+from tabnanny import check
+from turtle import color
+from matplotlib.pyplot import text
 import nextcord
 from nextcord.ext import commands
 import helper
@@ -65,6 +70,20 @@ class socialCreditHandler(commands.Cog):
             return await socialCreditHandler.getRoleUpdateMessage(user)
 
 
+    @commands.command(name = "hail", aliases = ["hailrepublic", "hailRepublic", "dailyBonus"], help = "daily bonus social credit when you hail the republic")
+    @commands.cooldown(1, 60*60*24, commands.BucketType.user)
+    async def dailyBonus(self, ctx):
+        rankUpEmbed = await socialCreditHandler.updateSocialCredit(ctx.guild, ctx.author, constants.DAILY_BONUS_REWARD)
+        embed = nextcord.Embed(
+            title = f"{ctx.author.display_name} has hailed the Peoples Republic of IHS and has been awarded {constants.DAILY_BONUS_REWARD} social credit!",
+            color = nextcord.Color.gold(),
+            description= "```All hail the Peoples Republic of IHS!```"
+            )
+        embed.timestamp = ctx.message.created_at
+        embed.set_thumbnail(url=constants.FLAG_IMG)
+        await ctx.channel.send(embed=embed)
+        if rankUpEmbed:
+            await ctx.channel.send(embed=rankUpEmbed)
 
 
     @commands.command(name = "awardMember", aliases = ["awardmember", "awardperson"], help = "Awards a member the specified amount of social credit")
@@ -123,6 +142,46 @@ class socialCreditHandler(commands.Cog):
 
 
 
+    @commands.command(name = "shame", aliases = ["stone", "accuse"],help = "shame someone if they deserve it")
+    async def shame(self, ctx, member:nextcord.Member, *, reason):
+        msg:nextcord.Message = ctx.message
+        sender:nextcord.Member = ctx.author
+        em = nextcord.Embed(title = f"{sender.display_name} shames {member.display_name}!", description=f"Reason: ```{reason}```", color=nextcord.Color.red())
+        em.add_field(name = f"Does {member.display_name} deserve to be punished?", value="````You decide. React with ✅ if you support the punishment. React with ❌ if you dont.```")
+        em.set_footer(text=f"Action will be taken at {constants.MINIMUM_SHAME_VOTES} votes.")
+        em.timestamp = msg.created_at
+        punishEmbed:nextcord.Message = await ctx.channel.send(embed=em)
+        await punishEmbed.add_reaction("✅")
+        await punishEmbed.add_reaction("❌")
+        punishVotes = 1
+        supportVotes = 1
+        while punishVotes < constants.MINIMUM_SHAME_VOTES and supportVotes < constants.MINIMUM_SHAME_VOTES:
+            def check2(reaction:nextcord.Reaction, user:nextcord.Member):
+                return str(reaction.emoji) in ["✅", "❌"] and reaction.message == punishEmbed
+            confirm = await self.client.wait_for("reaction_add", check=check2)
+            if confirm:
+                punishEmbed = await ctx.channel.fetch_message(punishEmbed.id)
+                punishVotes = 1 + punishEmbed.reactions[0].count
+                supportVotes = 1 + punishEmbed.reactions[1].count
+
+        if punishVotes > supportVotes:
+            em = nextcord.Embed(title = f"The people have spoken!", description=f"Reason: ```Since there were more votes to punish, {member.display_name} will be penalized {constants.SHAME_PENALTY} social credit for endangering the republic```", color=nextcord.Color.red())
+            em.timestamp = msg.created_at
+            await socialCreditHandler.updateSocialCredit(ctx.guild, member, -constants.SHAME_PENALTY)
+            try:
+                await punishEmbed.reply(embed=em)
+            except:
+                await ctx.channel.send(embed=em)
+        else:
+            em = nextcord.Embed(title = f"The people have spoken!", description=f"Reason: ```Since there were more votes to support, {sender.display_name} will be penalized {constants.SHAME_PENALTY} social credit for being a jerk.```", color=nextcord.Color.red())
+            em.timestamp = msg.created_at
+            await socialCreditHandler.updateSocialCredit(ctx.guild, sender, -constants.SHAME_PENALTY)
+            try:
+                await punishEmbed.reply(embed=em)
+            except:
+                await ctx.channel.send(embed=em)
+
+        
 
 
     @commands.command(name = "leaderboard", aliases = ["lb"],help = "displays top social credit holders")
@@ -136,12 +195,15 @@ class socialCreditHandler(commands.Cog):
         embed.timestamp = ctx.message.created_at
         rankings = sortedIdDictionary.keys()
         for x in rankings:
-            temp = ctx.guild.get_member(int(x)).display_name
-            tempSC = sortedIdDictionary[x]["socialCredit"]
-            embed.add_field(name = f"{i}: {temp}", value = f"`{tempSC} Social credit`", inline = False) 
-            i+=1
-            if i > limit:
-                break
+            try:
+                temp = ctx.guild.get_member(int(x)).display_name
+                tempSC = sortedIdDictionary[x]["socialCredit"]
+                embed.add_field(name = f"{i}: {temp}", value = f"`{tempSC} Social credit`", inline = False) 
+                i+=1
+                if i > limit:
+                    break
+            except:
+                pass
 
         await ctx.channel.send(embed=embed)
 
@@ -179,21 +241,68 @@ class socialCreditHandler(commands.Cog):
             embed.timestamp =ctx.message.created_at
             await ctx.channel.send(embed=embed)
 
+
+    @commands.command(name = "trivia", help = f"a gamble. If you get it right, you will recieve {constants.TRIVIA_REWARD} otherwise, you get {constants.TRIVIA_PENALTY}")
+    async def trivia(self, ctx):
+        questionObj:helper.TriviaQuestion = helper.getTriviaQuestion()
+        questionEmbed = nextcord.Embed(title = f"{questionObj.question}", description = questionObj.optionStr, color=nextcord.Color.yellow())
+        questionEmbed.set_footer(text = f"You have {constants.TRIVIA_TIME_LIMIT} seconds to answer.")
+        questionMsg:nextcord.Message = await ctx.channel.send(embed=questionEmbed)
+        reactionOptions = questionObj.optionDict.keys()
+        for reaction in reactionOptions:
+            await questionMsg.add_reaction(reaction)
+
+        def check(reaction:nextcord.Reaction, user):
+            return str(reaction.emoji) in reactionOptions and reaction.message == questionMsg and user == ctx.author
+        
+        try:
+            confirm = self.client.wait_for("reaction_add", check=check)
+            rawReaction = str(confirm[0])
+            isCorrect = questionObj.optionDict[rawReaction] == questionObj.correctAnswer
+
+            if isCorrect:
+                em = nextcord.Embed(title = f"Correct Answer!", description = f"{ctx.author.display_name} will be rewarded {constants.TRIVIA_REWARD} social credit", color=nextcord.Color.green())
+                em.timestamp = datetime.now()
+                await ctx.channel.send(embed=em)
+                await socialCreditHandler.updateSocialCredit(ctx.guild, ctx.author, constants.TRIVIA_REWARD)
+            else:
+                em = nextcord.Embed(title = f"Incorrect Answer!", description = f"{ctx.author.display_name} will be penalized {constants.TRIVIA_PENALTY} social credit", color=nextcord.Color.red())
+                em.timestamp = datetime.now()
+                await ctx.channel.send(embed=em)
+                await socialCreditHandler.updateSocialCredit(ctx.guild, ctx.author, -constants.TRIVIA_REWARD)
+
+
+
+
+
+        except asyncio.TimeoutError:
+            timeOut = nextcord.Embed(title = f"You took too long to answer.", description = f"{ctx.author.mention} will be penalized {constants.TRIVIA_PENALTY} social credit", color=nextcord.Color.red())
+            timeOut.timestamp = datetime.now()
+            await ctx.channel.send(embed=timeout)
+
+
+
+
     @commands.Cog.listener()
     async def on_message(self, message:nextcord.Message):
         dictKey = str(message.author.id)
 
+        if isinstance(message.channel, nextcord.channel.DMChannel):
+            return
         await helper.handleBadWords(message)
         if dictKey in USER_MESSAGE_COUNTER.keys():
             USER_MESSAGE_COUNTER[dictKey] +=1
-            if USER_MESSAGE_COUNTER[dictKey] == 10:
+            if USER_MESSAGE_COUNTER[dictKey] == 4:
                 databaseHandler.incrementUserValue(message.author, "socialCredit", 1)
                 rankUpEmbed = await socialCreditHandler.updateTitle(message.guild, message.author)
                 USER_MESSAGE_COUNTER[dictKey] = 0
                 if rankUpEmbed:
                     await message.channel.send(embed=rankUpEmbed)
         else:
-            USER_MESSAGE_COUNTER[dictKey] = 1
+            USER_MESSAGE_COUNTER[dictKey] = 0
+
+    
+
 
 
 

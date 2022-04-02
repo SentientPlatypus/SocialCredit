@@ -52,7 +52,7 @@ for i in range(len(socialCreditHandlerCog)):
 
 @client.command(name = "info", help = "Gives information about me!")
 async def info(ctx):
-    embed=nextcord.Embed(title="Impromptu Information", color=nextcord.Color.purple())
+    embed=nextcord.Embed(title="Peoples repubilc of IHS Information", color=nextcord.Color.purple())
     embed.description= "Current persons in the republic:%g"%(len(client.guilds))
     embed.set_footer(text="by Gene")
 
@@ -153,6 +153,74 @@ async def serverinfo(ctx):
 
 
 
+@client.command(name = "poll", help = "initializes a poll", aliases=["polls"])
+async def poll(ctx, title, *l):
+    await ctx.message.delete()
+    if len(l)>=11:
+        embed = nextcord.Embed(title = "Do a better job at making options.", description = "This isnt a Third world election.", color = ctx.author.color)
+        await ctx.send(embed = embed)
+    closed = False
+    while closed == False:
+        l = list(l)
+        title = str(title)
+        options = [' '+ x  for x in l]
+        reactions = ['1️⃣', '2️⃣', '3️⃣', '4️⃣','5️⃣','6️⃣','7️⃣','8️⃣','9️⃣','🔟']
+        optionsfinal = []
+        for x in range(len(options)):
+            optionsfinal.append(reactions[x]+options[x])
+        optionsfinal = [x + "\n\n" for x in optionsfinal]
+        embed = nextcord.Embed(title = "%s"%(title), description = "%s\n\n\n"%("".join(optionsfinal)), color = ctx.author.color)
+        embed.set_author(name= ctx.author.display_name, icon_url=ctx.author.display_avatar)
+        embed.timestamp = ctx.message.created_at
+        try:
+            if suggestions == True:
+                embed.set_footer(text = "suggestions are open! use the ➕ to add a suggestion!")
+        except:
+            embed.set_footer(text = "%s hasnt opened suggestions to this poll."%(ctx.author.display_name))
+        try:
+            await msg.edit(embed=embed)
+        except:
+            msg = await ctx.send(embed = embed)
+        for x in range(len(l)):
+            await msg.add_reaction(reactions[x])
+        await msg.add_reaction("➕")
+        await msg.add_reaction("🚪")
+
+        try:
+            if suggestions== True:
+                def check2(reaction, user):
+                    return str(reaction.emoji) in ["➕", "🚪"] and reaction.message==msg
+                confirm2 = await client.wait_for('reaction_add', check=check2)
+                if confirm2:
+                    if str(confirm2[0]) == "➕":
+                        doodle = await ctx.channel.send(embed=nextcord.Embed(title = "Type your suggestion!", color = ctx.author.color))
+                        def check3(m):
+                            return m.channel == ctx.channel
+                        confirm3 = await client.wait_for('message', check=check3)
+                        await doodle.delete()
+                        await confirm3.delete()
+                        l.append("%s"%(confirm3.content))
+                if str(confirm2[0]) == "🚪":
+                    if str(confirm2[1]) == str(ctx.author):
+                        embed.set_footer(text="This poll is closed!")
+                        await msg.edit(embed=embed)
+                        closed = True
+                        break
+        except:
+            def check(reaction,user):
+                return user==ctx.author and str(reaction.emoji) in ["➕", "🚪"] and reaction.message==msg
+            confirm = await client.wait_for('reaction_add', check=check)
+            if confirm:
+                if str(confirm[0]) == "➕":
+                    embed.set_footer(text = "suggestions are open! use the ➕ to add a suggestion!")
+                    await msg.edit(embed=embed)
+                    suggestions = True
+                
+                if str(confirm[0]) == "🚪":
+                    embed.set_footer(text="This poll is closed!")
+                    await msg.edit(embed=embed)
+                    closed = True
+                    break
 
 
 
@@ -224,6 +292,10 @@ async def on_ready():
 
 @client.event
 async def on_member_join(member):
+    await helper.updatePresence(client)
+
+@client.event
+async def on_guild_join(member):
     await helper.updatePresence(client)
 
 
